@@ -1,5 +1,8 @@
 # Nasdaq Internet-boom vs AI-boom — auto-updating chart
 
+**Live chart:** https://su-pro-max.github.io/nasdaq-boom-chart/ (always reflects the
+latest GitHub Actions run — no need to pull the repo to view it).
+
 Compares the dot-com era and the AI era on the same axes: **% change from each
 boom's start** vs **trading days from start**.
 

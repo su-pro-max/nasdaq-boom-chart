@@ -45,16 +45,25 @@ Open **`nasdaq_boom_interactive.html`** in any browser.
 - Needs internet once per open, to load the Plotly library from a CDN. The chart
   data itself is embedded in the file.
 
-## Schedule it on your Mac (installed — weekday mornings)
-Already set up via `crontab`, runs both scripts every weekday at 7am (point at the
-venv's python so no activation needed):
-```
-0 7 * * 1-5 ~/Projects/dot-com/nasdaq_recreate/venv/bin/python3 ~/Projects/dot-com/nasdaq_recreate/update_chart.py >> ~/Projects/dot-com/nasdaq_recreate/update.log 2>&1 && ~/Projects/dot-com/nasdaq_recreate/venv/bin/python3 ~/Projects/dot-com/nasdaq_recreate/make_interactive.py >> ~/Projects/dot-com/nasdaq_recreate/update.log 2>&1
-```
-Runs Mon–Fri (not weekends) at 7am — FRED's `NASDAQCOM` series publishes with a
-~1-business-day lag, so a 7am run reliably has the *prior* trading day's close
-already available rather than racing same-day publication.
-Edit with `crontab -e`, view with `crontab -l`.
+## Scheduling: GitHub Actions (installed — weekday mornings)
+This repo runs itself via `.github/workflows/update-chart.yml`: every weekday
+at ~11:17 UTC (≈7am US/Eastern) a GitHub-hosted runner checks out the repo,
+regenerates both charts, and commits the results straight to `main` if
+anything changed. No dependency on your laptop being awake or online.
+
+- Runs Mon–Fri only. The ~1-business-day FRED publish lag is why it fires in
+  the morning rather than at market close — by then the prior trading day's
+  close is reliably available.
+- Trigger a run manually any time from the repo's **Actions** tab →
+  *Refresh Nasdaq boom chart* → **Run workflow** (the workflow also has
+  `workflow_dispatch` enabled for this).
+- Requires only `numpy` + `matplotlib`, installed fresh each run — no venv
+  needed on the runner.
+
+(A local `crontab` entry doing the same thing was used earlier in this
+project's life but has been removed in favor of Actions, since a closed/
+asleep laptop silently skips cron — see project history if you want to
+resurrect the local-only version.)
 
 ## Files
 | file | purpose |

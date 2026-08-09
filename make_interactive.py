@@ -69,7 +69,15 @@ def series(dates, closes):
     return day, pct, cd, str(dates[-1]), float(closes[-1]), pct[-1]
 
 
-def blue_live():   return series(*fetch_fred(BLUE_START, BLUE_END))
+def blue_live():
+    """Live FRED fetch for the blue line, falling back to the traced CSV if FRED
+    is unreachable/slow (e.g. rate-limited or timing out from a CI runner).
+    Returns (day, pct, cd, last_date, last_val, last_pct, used_fallback)."""
+    try:
+        return series(*fetch_fred(BLUE_START, BLUE_END)) + (False,)
+    except Exception as e:
+        print(f"[data] FRED blue failed ({e}); using traced fallback")
+        return blue_traced() + (True,)
 def red_live():
     from update_chart import fetch_nasdaq
     d, c = fetch_nasdaq(AI_START)
@@ -156,9 +164,9 @@ def main():
         rx, ry, rcd, ld, lv, lp = red_demo()
         bsrc = "traced (approximate)"
     else:
-        bx, by, bcd, *_ = blue_live()
+        bx, by, bcd, *_, blue_fallback = blue_live()
         rx, ry, rcd, ld, lv, lp = red_live()
-        bsrc = "live FRED (exact)"
+        bsrc = "traced fallback (FRED unreachable)" if blue_fallback else "live FRED (exact)"
     # projected AI dates for days beyond the red line's end (no value yet)
     maxday   = int(max(bx))
     last_red = int(rx[-1])
